@@ -18,7 +18,8 @@ public class ChatRoomRepository {
 
     @PostConstruct
     public void init() {
-        addRoom(new ChatRoom("testRoo1"));
+        addRoom(new ChatRoom("room1"));
+        addRoom(new ChatRoom("room2"));
     }
 
     public void addRoom(ChatRoom chatRoom) {

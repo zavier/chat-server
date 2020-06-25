@@ -2,10 +2,7 @@ package com.github.zavier.chat.user;
 
 
 import com.github.zavier.chat.ChatServer;
-import com.github.zavier.chat.event.UserLoginEvent;
-import com.github.zavier.chat.event.UserLogoutEvent;
-import com.github.zavier.chat.room.ChatRoom;
-import com.github.zavier.chat.room.ChatRoomRepository;
+import com.github.zavier.chat.room.*;
 import com.github.zavier.chat.util.SpringUtil;
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
@@ -89,8 +86,8 @@ public enum UserStatus {
                 channel.writeAndFlush(">> login success!");
                 // 修改状态为选择聊天室
                 channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.SELECTING_CHAT_ROOM);
-                // 发送登录成功事件
-                SpringUtil.getEventPublisher().publishEvent(new UserLoginEvent(netUser.getUsername(), channel));
+                // 登录
+                SpringUtil.getBean(UserLoginService.class).userLogin(new LoginInfo(netUser.getUsername(), channel));
                 return true;
             }
 
@@ -120,8 +117,20 @@ public enum UserStatus {
                     .filter(chatRoom -> Objects.equals(chatRoom.getChatRoomName(), message))
                     .findFirst();
             if (selectRoomOptional.isPresent()) {
+                // 尝试加入聊天室事件
+                final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
+                try {
+                    final ChatRoomService chatRoomService = SpringUtil.getBean(ChatRoomService.class);
+                    chatRoomService.tryJoinRoom(new JoinRoomInfo(username, message, channel));
+                } catch (Exception e) {
+                    channel.writeAndFlush(e.getMessage());
+                    return;
+                }
+                // 加入聊天室成功，发送消息，修改状态
                 channel.writeAndFlush(">> Enter " + message + " room success");
                 channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.CHATING);
+                // 绑定用户所在聊天室
+                channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).set(message);
             } else {
                 channel.writeAndFlush(">> please input a correct room name ");
             }
@@ -161,11 +170,13 @@ public enum UserStatus {
             final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
             String sendMessage = ">> " + username + ": " + message + "\r";
 
-            LoginUserChannelRegistry instance = SpringUtil.getBean(LoginUserChannelRegistry.class);
-            Map<String, Channel> onlineUserInfoMap = instance.getOnlineUserInfoMap();
-            onlineUserInfoMap.forEach((name, ch) -> {
-                ch.writeAndFlush(sendMessage);
-            });
+            final String roomName = channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).get();
+            final Map<String, Channel> allUserChannelByRoomName = SpringUtil.getBean(ChatRoomService.class).getAllUserChannelByRoomName(roomName);
+            if (allUserChannelByRoomName != null) {
+                allUserChannelByRoomName.forEach((name, ch) -> {
+                    ch.writeAndFlush(sendMessage);
+                });
+            }
         }
     },
 
@@ -194,7 +205,16 @@ public enum UserStatus {
 
         for (String exitCmd : EXIT_CMD) {
             if (exitCmd.equalsIgnoreCase(message)) {
-                SpringUtil.getEventPublisher().publishEvent(new UserLogoutEvent(channel));
+                // 如果在聊天室中则退出聊天室，否则整个退出
+                if (channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).get() != null) {
+                    final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
+                    final String roomName = channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).get();
+                    channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).set(null);
+                    SpringUtil.getBean(ChatRoomService.class).quitRoom(new QuitRoomInfo(username, roomName, channel));
+                    channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.SELECTING_CHAT_ROOM);
+                } else {
+                    SpringUtil.getBean(UserLoginService.class).userLogout(new LogoutInfo(channel));
+                }
                 return true;
             }
         }

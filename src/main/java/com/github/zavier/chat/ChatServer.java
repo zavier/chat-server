@@ -26,7 +26,7 @@ public class ChatServer {
 
     public static final AttributeKey<String> USER_NAME_ATTR_KEY = AttributeKey.newInstance("USER_NAME_KEY");
 
-    public static final AttributeKey<String> CHAT_ROOT_ATTR_KEY = AttributeKey.newInstance("CHAT_ROOT_KEY");
+    public static final AttributeKey<String> CHAT_ROOM_ATTR_KEY = AttributeKey.newInstance("CHAT_ROOM_KEY");
 
     public static final AttributeKey<UserStatus> USER_STATUS_ATTR_KEY = AttributeKey.newInstance("USER_STATUS_KEY");
 

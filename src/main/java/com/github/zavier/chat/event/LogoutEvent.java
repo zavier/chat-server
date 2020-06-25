@@ -2,17 +2,13 @@ package com.github.zavier.chat.event;
 
 import io.netty.channel.Channel;
 
-public class UserLogoutEvent {
+public class LogoutEvent {
 
     private String username;
 
     private Channel channel;
 
-    public UserLogoutEvent(Channel channel) {
-        this.channel = channel;
-    }
-
-    public UserLogoutEvent(String username, Channel channel) {
+    public LogoutEvent(String username, Channel channel) {
         this.username = username;
         this.channel = channel;
     }

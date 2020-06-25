@@ -1,7 +1,7 @@
 package com.github.zavier.chat.handler;
 
 import com.github.zavier.chat.ChatServer;
-import com.github.zavier.chat.event.UserLogoutEvent;
+import com.github.zavier.chat.user.LogoutInfo;
 import com.github.zavier.chat.user.UserStatus;
 import com.github.zavier.chat.util.SpringUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         final ApplicationEventPublisher eventPublisher = SpringUtil.getEventPublisher();
-        eventPublisher.publishEvent(new UserLogoutEvent(ctx.channel()));
+        eventPublisher.publishEvent(new LogoutInfo(ctx.channel()));
     }
 
     @Override

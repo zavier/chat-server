@@ -1,14 +1,14 @@
-package com.github.zavier.chat.event;
+package com.github.zavier.chat.user;
 
 import io.netty.channel.Channel;
 
-public class UserLoginEvent {
+public class LoginInfo {
 
     private String username;
 
     private Channel channel;
 
-    public UserLoginEvent(String username, Channel channel) {
+    public LoginInfo(String username, Channel channel) {
         this.username = username;
         this.channel = channel;
     }
