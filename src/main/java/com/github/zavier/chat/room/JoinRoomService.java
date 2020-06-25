@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ChatRoomService {
+public class JoinRoomService {
 
     private static final int ROOM_MAX_USERS = 50;
 

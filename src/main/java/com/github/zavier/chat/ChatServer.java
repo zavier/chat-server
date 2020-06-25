@@ -2,6 +2,7 @@ package com.github.zavier.chat;
 
 import com.github.zavier.chat.codec.StringLineBasedFrameDecoder;
 import com.github.zavier.chat.codec.StringMessageEncoder;
+import com.github.zavier.chat.handler.ManageRoomMessageHandler;
 import com.github.zavier.chat.handler.MessageHandler;
 import com.github.zavier.chat.handler.TimeoutHandler;
 import com.github.zavier.chat.user.UserStatus;
@@ -50,6 +51,7 @@ public class ChatServer {
 //                            pipeline.addLast("log", new LoggingHandler(LogLevel.INFO));
                             pipeline.addLast("decoder", new StringLineBasedFrameDecoder(5 * 1024));
                             pipeline.addLast("encoder", new StringMessageEncoder());
+                            pipeline.addLast("manage", new ManageRoomMessageHandler());
                             pipeline.addLast("handler", new MessageHandler());
                         }
                     });

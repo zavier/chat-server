@@ -120,14 +120,14 @@ public enum UserStatus {
                 // 尝试加入聊天室事件
                 final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
                 try {
-                    final ChatRoomService chatRoomService = SpringUtil.getBean(ChatRoomService.class);
-                    chatRoomService.tryJoinRoom(new JoinRoomInfo(username, message, channel));
+                    final JoinRoomService joinRoomService = SpringUtil.getBean(JoinRoomService.class);
+                    joinRoomService.tryJoinRoom(new JoinRoomInfo(username, message, channel));
                 } catch (Exception e) {
                     channel.writeAndFlush(e.getMessage());
                     return;
                 }
                 // 加入聊天室成功，发送消息，修改状态
-                channel.writeAndFlush(">> Enter " + message + " room success");
+                channel.writeAndFlush(">> Enter " + message + " success");
                 channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.CHATING);
                 // 绑定用户所在聊天室
                 channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).set(message);
@@ -171,7 +171,7 @@ public enum UserStatus {
             String sendMessage = ">> " + username + ": " + message + "\r";
 
             final String roomName = channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).get();
-            final Map<String, Channel> allUserChannelByRoomName = SpringUtil.getBean(ChatRoomService.class).getAllUserChannelByRoomName(roomName);
+            final Map<String, Channel> allUserChannelByRoomName = SpringUtil.getBean(JoinRoomService.class).getAllUserChannelByRoomName(roomName);
             if (allUserChannelByRoomName != null) {
                 allUserChannelByRoomName.forEach((name, ch) -> {
                     ch.writeAndFlush(sendMessage);
@@ -210,7 +210,7 @@ public enum UserStatus {
                     final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
                     final String roomName = channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).get();
                     channel.attr(ChatServer.CHAT_ROOM_ATTR_KEY).set(null);
-                    SpringUtil.getBean(ChatRoomService.class).quitRoom(new QuitRoomInfo(username, roomName, channel));
+                    SpringUtil.getBean(JoinRoomService.class).quitRoom(new QuitRoomInfo(username, roomName, channel));
                     channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.SELECTING_CHAT_ROOM);
                 } else {
                     SpringUtil.getBean(UserLoginService.class).userLogout(new LogoutInfo(channel));
