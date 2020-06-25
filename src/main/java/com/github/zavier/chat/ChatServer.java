@@ -2,11 +2,9 @@ package com.github.zavier.chat;
 
 import com.github.zavier.chat.codec.StringLineBasedFrameDecoder;
 import com.github.zavier.chat.codec.StringMessageEncoder;
-import com.github.zavier.chat.room.ChatRoom;
-import com.github.zavier.chat.room.ChatRoomRepository;
-import com.github.zavier.chat.handler.*;
-import com.github.zavier.chat.user.NetUser;
-import com.github.zavier.chat.user.NetUserRepository;
+import com.github.zavier.chat.handler.MessageHandler;
+import com.github.zavier.chat.handler.TimeoutHandler;
+import com.github.zavier.chat.user.UserStatus;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -28,23 +26,9 @@ public class ChatServer {
 
     public static final AttributeKey<String> USER_NAME_ATTR_KEY = AttributeKey.newInstance("USER_NAME_KEY");
 
-    public void initData() {
-        // 初始化聊天室
-        ChatRoom chatRoom = new ChatRoom("chat root 1");
-        ChatRoomRepository instance = ChatRoomRepository.getInstance();
-        instance.addRoom(chatRoom);
+    public static final AttributeKey<String> CHAT_ROOT_ATTR_KEY = AttributeKey.newInstance("CHAT_ROOT_KEY");
 
-        // 初始化用户
-        NetUserRepository userRepository = NetUserRepository.getInstance();
-        NetUser netUser = new NetUser("admin", "admin");
-        NetUser netUser1 = new NetUser("lisi", "test");
-        NetUser netUser2 = new NetUser("zhangsan", "test");
-        NetUser netUser3 = new NetUser("wangwu", "test");
-        userRepository.registry(netUser);
-        userRepository.registry(netUser1);
-        userRepository.registry(netUser2);
-        userRepository.registry(netUser3);
-    }
+    public static final AttributeKey<UserStatus> USER_STATUS_ATTR_KEY = AttributeKey.newInstance("USER_STATUS_KEY");
 
     public void startServer(int port) {
         InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
@@ -66,8 +50,7 @@ public class ChatServer {
 //                            pipeline.addLast("log", new LoggingHandler(LogLevel.INFO));
                             pipeline.addLast("decoder", new StringLineBasedFrameDecoder(5 * 1024));
                             pipeline.addLast("encoder", new StringMessageEncoder());
-                            pipeline.addLast("loginHandler", new LoginHandler());
-                            pipeline.addLast("server", new DispatcherServerHandler());
+                            pipeline.addLast("handler", new MessageHandler());
                         }
                     });
             // 同步绑定

@@ -1,28 +1,22 @@
 package com.github.zavier.chat.user;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Component
 public class NetUserRepository {
 
     private final ConcurrentMap<String, NetUser> netUserMap = new ConcurrentHashMap<>();
 
-    private NetUserRepository() {}
-
-    private static NetUserRepository INSTANCE;
-
-    public static NetUserRepository getInstance() {
-        if (INSTANCE == null) {
-            synchronized (NetUserRepository.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new NetUserRepository();
-                }
-            }
-        }
-        return INSTANCE;
+    @PostConstruct
+    public void init() {
+        final NetUser netUser = new NetUser("admin", "admin");
+        registry(netUser);
     }
 
     public void registry(NetUser netUser) {

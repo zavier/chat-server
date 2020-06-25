@@ -3,6 +3,7 @@ package com.github.zavier.chat.user;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,36 +11,30 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
+@Component
 public class LoginUserChannelRegistry {
-
-    private LoginUserChannelRegistry(){}
-
-    private static LoginUserChannelRegistry INSTANCE;
-
-    public static LoginUserChannelRegistry getInstance() {
-        if (INSTANCE == null) {
-            synchronized (LoginUserChannelRegistry.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new LoginUserChannelRegistry();
-                }
-            }
-        }
-        return INSTANCE;
-    }
 
     private final ConcurrentMap<String, Channel> userNameChannelMap = new ConcurrentHashMap<>();
 
-    public void online(Channel channel, String userName) {
-        userNameChannelMap.put(userName, channel);
-        log.info("{} online", userName);
+    public boolean online(Channel channel, String userName) {
+        final Channel put = userNameChannelMap.put(userName, channel);
+        if (put == null) {
+            log.info("{} online", userName);
+            return true;
+        }
+        return false;
     }
 
-    public void offline(String username) {
+    public boolean offline(String username) {
         if (StringUtils.isBlank(username)) {
-            return;
+            return false;
         }
-        userNameChannelMap.remove(username);
-        log.info("{} offline", username);
+        final Channel remove = userNameChannelMap.remove(username);
+        if (remove != null) {
+            log.info("{} offline", username);
+            return true;
+        }
+        return false;
     }
 
     public boolean isLogin(String username) {

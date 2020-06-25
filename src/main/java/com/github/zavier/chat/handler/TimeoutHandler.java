@@ -6,6 +6,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 用于控制客户端超时关闭
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class TimeoutHandler extends ChannelDuplexHandler {

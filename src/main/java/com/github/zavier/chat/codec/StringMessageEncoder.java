@@ -10,6 +10,6 @@ public class StringMessageEncoder extends MessageToByteEncoder<String> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, String msg, ByteBuf out) throws Exception {
-        out.writeBytes(msg.getBytes(StandardCharsets.UTF_8));
+        out.writeBytes((msg + "\n").getBytes(StandardCharsets.UTF_8));
     }
 }

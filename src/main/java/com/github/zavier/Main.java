@@ -9,7 +9,6 @@ public class Main {
             port = Integer.parseInt(args[0]);
         }
         ChatServer chatServer = new ChatServer();
-        chatServer.initData();
         chatServer.startServer(port);
     }
 }
