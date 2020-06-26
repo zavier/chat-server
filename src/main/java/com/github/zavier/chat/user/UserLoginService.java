@@ -4,6 +4,7 @@ import com.github.zavier.chat.ChatServer;
 import com.github.zavier.chat.event.LogoutEvent;
 import com.github.zavier.chat.room.ChatRoomRepository;
 import io.netty.channel.Channel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,16 @@ public class UserLoginService {
     public void userLogout(LogoutInfo logoutInfo) {
         final Channel channel = logoutInfo.getChannel();
         final String username = channel.attr(ChatServer.USER_NAME_ATTR_KEY).get();
+
+        // 用户还没有登录,直接关闭即可
+        if (StringUtils.isBlank(username) || !loginUserChannelRegistry.isLogin(username)) {
+            channel.writeAndFlush(">> Bye bye!");
+            if (channel.isOpen()) {
+                channel.close();
+            }
+            return;
+        }
+
         final boolean offline = loginUserChannelRegistry.offline(username);
         if (offline) {
             channel.writeAndFlush(">> Bye bye!");
