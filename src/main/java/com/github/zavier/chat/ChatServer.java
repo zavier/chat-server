@@ -46,7 +46,7 @@ public class ChatServer {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline pipeline = socketChannel.pipeline();
-                            pipeline.addLast("readTimeout", new ReadTimeoutHandler(6, TimeUnit.HOURS));
+                            pipeline.addLast("readTimeout", new ReadTimeoutHandler(10, TimeUnit.MINUTES));
                             pipeline.addLast("timeoutHandler", new TimeoutHandler());
 //                            pipeline.addLast("log", new LoggingHandler(LogLevel.INFO));
                             pipeline.addLast("decoder", new StringLineBasedFrameDecoder(5 * 1024));

@@ -41,6 +41,10 @@ public class LoginUserChannelRegistry {
         return userNameChannelMap.containsKey(username);
     }
 
+    public Channel getUserChannel(String username) {
+        return userNameChannelMap.get(username);
+    }
+
     public Map<String, Channel> getOnlineUserInfoMap() {
         return new HashMap<>(userNameChannelMap);
     }

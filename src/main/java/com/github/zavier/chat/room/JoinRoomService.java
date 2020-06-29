@@ -2,16 +2,15 @@ package com.github.zavier.chat.room;
 
 import com.github.zavier.chat.ChatServer;
 import com.github.zavier.chat.event.LogoutEvent;
+import com.github.zavier.chat.user.LogoutInfo;
+import com.github.zavier.chat.user.UserLoginService;
 import io.netty.channel.Channel;
-import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -23,6 +22,12 @@ public class JoinRoomService {
     private static final int ROOM_MAX_USERS = 50;
 
     private final ConcurrentMap<String, Set<JoinRoomUser>> map = new ConcurrentHashMap<>();
+
+    private final UserLoginService userLoginService;
+
+    public JoinRoomService(UserLoginService userLoginService) {
+        this.userLoginService = userLoginService;
+    }
 
     public void tryJoinRoom(JoinRoomInfo joinRoomInfo) {
         final JoinRoomUser joinRoomUser = new JoinRoomUser(joinRoomInfo.getUsername(), joinRoomInfo.getUserChannel());
@@ -36,6 +41,17 @@ public class JoinRoomService {
             if (joinRoomUsers.size() >= ROOM_MAX_USERS) {
                 throw new RuntimeException("char room's user is full, please select another");
             }
+
+            // 如果已经加入，会被顶掉
+            Iterator<JoinRoomUser> iterator = joinRoomUsers.iterator();
+            while (iterator.hasNext()) {
+                JoinRoomUser next = iterator.next();
+                if (Objects.equals(next.getUserName(), joinRoomInfo.getUsername())) {
+                    userLoginService.userLogout(new LogoutInfo(next.getUserChannel()));
+                    iterator.remove();
+                }
+            }
+            // 加入
             joinRoomUsers.add(joinRoomUser);
         }
     }
@@ -64,14 +80,30 @@ public class JoinRoomService {
                 .collect(Collectors.toMap(JoinRoomUser::getUserName, JoinRoomUser::getUserChannel));
     }
 
-    @Data
     public static class JoinRoomUser {
-        private String userName;
-        private Channel userChannel;
+        @Getter
+        private final String userName;
+
+        @Getter
+        private final Channel userChannel;
 
         public JoinRoomUser(String userName, Channel userChannel) {
             this.userName = userName;
             this.userChannel = userChannel;
+        }
+
+        @Override
+        public int hashCode() {
+            return userName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof JoinRoomUser) {
+                JoinRoomUser joinRoomUser = (JoinRoomUser) obj;
+                return Objects.equals(this.getUserName(), joinRoomUser.getUserName());
+            }
+            return false;
         }
     }
 }

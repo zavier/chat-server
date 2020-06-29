@@ -5,10 +5,12 @@ import com.github.zavier.chat.ChatServer;
 import com.github.zavier.chat.room.*;
 import com.github.zavier.chat.util.SpringUtil;
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
+@Slf4j
 public enum UserStatus {
 
 
@@ -82,6 +84,8 @@ public enum UserStatus {
             boolean checkPassword = netUserRepository.checkPassword(netUser);
             // 校验通过
             if (checkPassword) {
+                // 关闭之前的连接
+                closeBeforeLoginChannelOfSameUser(netUser.getUsername());
                 // 发送登录成功事件
                 channel.writeAndFlush(">> login success!");
                 // 修改状态为选择聊天室
@@ -97,6 +101,21 @@ public enum UserStatus {
             // 重置为重新输入用户名态
             channel.attr(ChatServer.USER_STATUS_ATTR_KEY).set(UserStatus.TYPING_USER_NAME);
             return false;
+        }
+
+        /**
+         * 关闭之前相同用户登录的连接
+         *
+         * @param username 用户名称
+         */
+        private void closeBeforeLoginChannelOfSameUser(String username) {
+            Channel userChannel = SpringUtil.getBean(LoginUserChannelRegistry.class).getUserChannel(username);
+            if (userChannel == null) {
+                return;
+            }
+            log.info("username:{} logout before login", username);
+            LogoutInfo logoutInfo = new LogoutInfo(userChannel);
+            SpringUtil.getBean(UserLoginService.class).userLogout(logoutInfo);
         }
     },
 

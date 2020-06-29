@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 
 public class LogoutInfo {
 
-    private Channel channel;
+    private final Channel channel;
 
     public LogoutInfo(Channel channel) {
         this.channel = channel;

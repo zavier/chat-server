@@ -4,9 +4,9 @@ import io.netty.channel.Channel;
 
 public class LogoutEvent {
 
-    private String username;
+    private final String username;
 
-    private Channel channel;
+    private final Channel channel;
 
     public LogoutEvent(String username, Channel channel) {
         this.username = username;

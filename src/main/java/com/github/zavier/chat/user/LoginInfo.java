@@ -4,9 +4,9 @@ import io.netty.channel.Channel;
 
 public class LoginInfo {
 
-    private String username;
+    private final String username;
 
-    private Channel channel;
+    private final Channel channel;
 
     public LoginInfo(String username, Channel channel) {
         this.username = username;
