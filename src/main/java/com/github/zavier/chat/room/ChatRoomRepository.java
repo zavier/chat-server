@@ -3,7 +3,7 @@ package com.github.zavier.chat.room;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -17,13 +17,10 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class ChatRoomRepository {
 
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private JoinRoomService joinRoomService;
 
-    private final JoinRoomService joinRoomService;
-
-    public ChatRoomRepository(ApplicationEventPublisher applicationEventPublisher,
-                              JoinRoomService joinRoomService) {
-        this.applicationEventPublisher = applicationEventPublisher;
+    @Autowired
+    public void setJoinRoomService(JoinRoomService joinRoomService) {
         this.joinRoomService = joinRoomService;
     }
 
